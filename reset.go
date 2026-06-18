@@ -11,6 +11,7 @@ func (cfg *apiConfig) resetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cfg.databaseQueries.DeleteUsers(r.Context())
+	cfg.databaseQueries.DeleteChirps(r.Context())
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	cfg.fileserverHits.Swap(0)
 	w.WriteHeader(http.StatusOK)
