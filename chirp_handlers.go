@@ -56,3 +56,45 @@ func (cfg *apiConfig) createChirpHandler(w http.ResponseWriter, r *http.Request)
 	}
 	respondWithJSON(w, http.StatusCreated, response)
 }
+
+func (cfg *apiConfig) getChirpsHandler(w http.ResponseWriter, r *http.Request) {
+	chirps, err := cfg.databaseQueries.ListChirps(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error listing chirps from database", err)
+		return
+	}
+
+	response := []Chirp{}
+	for _, chirp := range chirps {
+		response = append(response, Chirp{
+			Id:        chirp.ID,
+			CreatedAt: chirp.CreatedAt,
+			UpdatedAt: chirp.UpdatedAt,
+			Body:      chirp.Body,
+			UserId:    chirp.UserID,
+		})
+	}
+	respondWithJSON(w, http.StatusOK, response)
+}
+
+func (cfg *apiConfig) getChirpByIdHandler(w http.ResponseWriter, r *http.Request) {
+	chirpId, err := uuid.Parse(r.PathValue("chirpId"))
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error parsing path value", err)
+		return
+	}
+	chirp, err := cfg.databaseQueries.GetChirp(r.Context(), chirpId)
+	if err != nil {
+		respondWithError(w, http.StatusNotFound, "Error finding chirp", err)
+		return
+	}
+
+	response := Chirp{
+		Id:        chirp.ID,
+		CreatedAt: chirp.CreatedAt,
+		UpdatedAt: chirp.UpdatedAt,
+		Body:      chirp.Body,
+		UserId:    chirp.UserID,
+	}
+	respondWithJSON(w, http.StatusOK, response)
+}
